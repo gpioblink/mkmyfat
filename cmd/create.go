@@ -12,17 +12,17 @@ import (
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "create <imagePath> <file list (ex: a.txt b.txt c.txt ...)>",
+	Short: "Create a new FAT32 image",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("create called")
-		mkmyfat.Create()
+		imagePath := args[0]
+		fileList := args[1:]
+		fmt.Printf("imagePath %s, fileList %s\n", imagePath, fileList)
+
+		err := mkmyfat.Create(imagePath, fileList)
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
 
