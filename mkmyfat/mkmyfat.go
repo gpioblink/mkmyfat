@@ -194,7 +194,7 @@ func Create(imgPath string, diskSizeBytes int) error {
 	}
 
 	// FAT2
-	_, err = f.Seek(int64(bytesPerSector*(resarvedSectors+fatSectors)), 0)
+	_, err = f.Seek(int64(bytesPerSector*(resarvedSectors+fatTableSize)), 0)
 	if err != nil {
 		return fmt.Errorf("failed to seek file %s: %s", imgPath, err)
 	}
