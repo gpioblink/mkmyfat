@@ -6,22 +6,31 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 	"gpioblink.com/app/makemyfat/mkmyfat"
 )
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
-	Use:   "create <imagePath> <file list (ex: a.txt b.txt c.txt ...)>",
+	Use:   "create <imagePath> <fileSize> [<file list (ex: a.txt b.txt c.txt ...)>]",
 	Short: "Create a new FAT32 image",
 	Run: func(cmd *cobra.Command, args []string) {
 		imagePath := args[0]
-		fileList := args[1:]
-		fmt.Printf("imagePath %s, fileList %s\n", imagePath, fileList)
+		fileSizeText := args[1]
 
-		err := mkmyfat.Create(imagePath, fileList)
+		fileSize, err := humanize.ParseBytes(fileSizeText)
 		if err != nil {
 			fmt.Println(err)
+			return
+		}
+
+		fmt.Printf("imagePath %s, fileSize %d \n", imagePath, fileSize)
+
+		err = mkmyfat.Create(imagePath, int(fileSize))
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
 	},
 }
