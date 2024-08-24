@@ -84,11 +84,6 @@ func (fat *FAT) Export(f *os.File) error {
 				return err
 			}
 		}
-
-		err = binary.Write(f, binary.LittleEndian, fat)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/binary"
+	"os"
 	"time"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
@@ -27,6 +29,53 @@ type DirectoryEntry struct {
 	DIR_WrtDate      uint16   // ファイル更新日付（必須）
 	DIR_FstClusLO    uint16   // ファーストクラスタの下位16ビット。ファイルサイズがゼロの時はクラスタは割り当てられず常に0
 	DIR_FileSize     uint32   // バイト単位のファイルサイズ。ディレクトリの場合は常に0
+}
+
+func ImportDirectryEntry(f *os.File) (*DirectoryEntry, error) {
+	bpb := &Fat32BPB{}
+	// TODO:読み込んだ構造体がDirEntryの構造体であることを確認する
+
+	// TODO: 別のfatを確認し、一致しなければエラーを返す
+
+	return &bpb, nil
+}
+
+func (dir *DirectoryEntry) Export(f *os.File) error {
+	// BPBを読み込み、配置箇所を特定する
+	bpb, err := ImportFAT32BPB(f)
+	if err != nil {
+		return err
+	}
+
+	for i := uint8(0); i < bpb.BPB_NumFATs; i++ {
+		// FATの配置箇所を特定する
+		fatStart := tools.FAT2Sec(bpb.BPB_RsvdSecCnt, bpb.BPB_FATSz32, i)
+		_, err = f.Seek(int64(tools.Sec2Addr(fatStart, bpb.BPB_BytsPerSec)), 0)
+		if err != nil {
+			return err
+		}
+
+		// テーブルをすべて0で埋める
+		_, err = f.Write(make([]byte, tools.Sec2Addr(bpb.BPB_FATSz32, bpb.BPB_BytsPerSec)))
+		if err != nil {
+			return err
+		}
+
+		// 値のある場所に書き込む
+		for key, value := range *fat {
+			_, err = f.Seek(int64(tools.Sec2Addr(fatStart, bpb.BPB_BytsPerSec))+int64(4*key), 0)
+			if err != nil {
+				return err
+			}
+
+			err = binary.Write(f, binary.LittleEndian, value)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func NewDirectoryEntry(shortName [11]byte, attrFlag uint8, writeDateTime time.Time, clusterFrom uint32, fileSize uint32) *DirectoryEntry {
