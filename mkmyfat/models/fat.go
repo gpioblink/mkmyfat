@@ -45,7 +45,7 @@ func (fat *FAT) AllocateContinuesSectors(clusterFrom uint32, num int) error {
 		if (*fat)[clusterFrom+i] != 0x0 {
 			return fmt.Errorf("cluster %d is already used", clusterFrom+i)
 		}
-		(*fat)[clusterFrom+i] = uint32(i + 1)
+		(*fat)[clusterFrom+i] = uint32(clusterFrom + i + 1)
 	}
 	(*fat)[clusterFrom+uint32(num)-1] = 0x0fffffff
 	return nil
