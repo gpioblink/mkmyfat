@@ -110,7 +110,7 @@ func (ec *EntryCluster) ExportRoot(bpb *Fat32BPB, f *os.File) error {
 }
 
 func (dc *EntryCluster) String() string {
-	return tools.PrettyPrintStruct("DIR", dc)
+	return tools.PrettyPrintStruct("DIR", dc.cluster)
 }
 
 func NewEntryCluster(bpb *Fat32BPB, fat *FAT) *EntryCluster {
