@@ -43,6 +43,10 @@ func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
 	return nil
 }
 
+func (fi *FSInfo) String() string {
+	return tools.PrettyPrintStruct(fi)
+}
+
 func NewFSInfo() *FSInfo {
 	return &FSInfo{
 		FSI_LeadSig:    0x41615252,

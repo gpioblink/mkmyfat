@@ -43,30 +43,34 @@ type Fat32BPB struct {
 	BS_Sign       uint16    // 0xaa55 // ブートセクタの終了シグネチャ。0xaa55であることが推奨されている
 }
 
-func (fat *Fat32BPB) Export(f *os.File) error {
+func (bpb *Fat32BPB) Export(f *os.File) error {
 	// FAT32のBPBをファイルに書き込む
 	_, err := f.Seek(0, 0)
 	if err != nil {
 		return err
 	}
 
-	err = binary.Write(f, binary.LittleEndian, fat)
+	err = binary.Write(f, binary.LittleEndian, bpb)
 	if err != nil {
 		return err
 	}
 
 	// バックアップセクタへも書き込み
-	_, err = f.Seek(int64(tools.Sec2Addr(uint32(fat.BPB_BkBootSec), fat.BPB_BytsPerSec)), 0)
+	_, err = f.Seek(int64(tools.Sec2Addr(uint32(bpb.BPB_BkBootSec), bpb.BPB_BytsPerSec)), 0)
 	if err != nil {
 		return err
 	}
 
-	err = binary.Write(f, binary.LittleEndian, fat)
+	err = binary.Write(f, binary.LittleEndian, bpb)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (bpb *Fat32BPB) String() string {
+	return tools.PrettyPrintStruct(bpb)
 }
 
 func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {

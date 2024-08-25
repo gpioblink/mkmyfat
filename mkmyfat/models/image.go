@@ -42,6 +42,10 @@ func (img *FAT32Image) Export() error {
 	return nil
 }
 
+func (img *FAT32Image) String() string {
+	return img.fat32BPB.String() + img.fsInfo.String() + img.fat.String() + img.rootClus.String()
+}
+
 func NewFAT32Image(file *os.File, size uint64) *FAT32Image {
 	bpb := NewFat32BPB(int(size))
 	fsInfo := NewFSInfo()
