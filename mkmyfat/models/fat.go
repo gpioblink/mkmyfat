@@ -41,9 +41,9 @@ func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
 func (fat *FAT) AllocateContinuesSectors(clusterFrom uint32, num int) error {
 	// 連続したクラスタをFATに確保
 	(*fat)[clusterFrom] = uint32(clusterFrom + 1)
-	for i := uint32(0); i < uint32(num); i++ {
+	for i := uint32(1); i < uint32(num)-1; i++ {
 		if (*fat)[clusterFrom+i] != 0x0 {
-			return fmt.Errorf("cluster %d is already used", i)
+			return fmt.Errorf("cluster %d is already used", clusterFrom+i)
 		}
 		(*fat)[clusterFrom+i] = uint32(i + 1)
 	}

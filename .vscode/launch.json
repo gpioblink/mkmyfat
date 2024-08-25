@@ -10,7 +10,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}/..",
+            "program": "${workspaceFolder}",
             "args": ["create", "test1.img", "128MiB", "mp4", "5", "16MiB"]
         }
     ]
