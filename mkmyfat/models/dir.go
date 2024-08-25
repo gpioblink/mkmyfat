@@ -31,51 +31,33 @@ type DirectoryEntry struct {
 	DIR_FileSize     uint32   // バイト単位のファイルサイズ。ディレクトリの場合は常に0
 }
 
-func ImportDirectryEntry(f *os.File) (*DirectoryEntry, error) {
-	bpb := &Fat32BPB{}
-	// TODO:読み込んだ構造体がDirEntryの構造体であることを確認する
-
-	// TODO: 別のfatを確認し、一致しなければエラーを返す
-
-	return &bpb, nil
+type DirectoryCluster struct {
+	cluster []DirectoryEntry
 }
 
-func (dir *DirectoryEntry) Export(f *os.File) error {
-	// BPBを読み込み、配置箇所を特定する
-	bpb, err := ImportFAT32BPB(f)
+func (dc *DirectoryCluster) ExportRoot(bpb *Fat32BPB, f *os.File) error {
+	rootClusterAddr := tools.Sec2Addr(tools.Clus2Sec(bpb.BPB_RootClus, bpb.BPB_SecPerClus), bpb.BPB_BytsPerSec)
+
+	// rootClusterの配置箇所に移動する
+	_, err := f.Seek(int64(rootClusterAddr), 0)
 	if err != nil {
 		return err
 	}
 
-	for i := uint8(0); i < bpb.BPB_NumFATs; i++ {
-		// FATの配置箇所を特定する
-		fatStart := tools.FAT2Sec(bpb.BPB_RsvdSecCnt, bpb.BPB_FATSz32, i)
-		_, err = f.Seek(int64(tools.Sec2Addr(fatStart, bpb.BPB_BytsPerSec)), 0)
+	for _, v := range dc.cluster {
+		err = binary.Write(f, binary.LittleEndian, v)
 		if err != nil {
 			return err
-		}
-
-		// テーブルをすべて0で埋める
-		_, err = f.Write(make([]byte, tools.Sec2Addr(bpb.BPB_FATSz32, bpb.BPB_BytsPerSec)))
-		if err != nil {
-			return err
-		}
-
-		// 値のある場所に書き込む
-		for key, value := range *fat {
-			_, err = f.Seek(int64(tools.Sec2Addr(fatStart, bpb.BPB_BytsPerSec))+int64(4*key), 0)
-			if err != nil {
-				return err
-			}
-
-			err = binary.Write(f, binary.LittleEndian, value)
-			if err != nil {
-				return err
-			}
 		}
 	}
 
 	return nil
+}
+
+func NewDirectoryCluster() *DirectoryCluster {
+	return &DirectoryCluster{
+		cluster: make([]DirectoryEntry, 0),
+	}
 }
 
 func NewDirectoryEntry(shortName [11]byte, attrFlag uint8, writeDateTime time.Time, clusterFrom uint32, fileSize uint32) *DirectoryEntry {

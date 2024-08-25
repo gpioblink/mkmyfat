@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"gpioblink.com/app/makemyfat/mkmyfat"
 )
 
 // addCmd represents the add command
@@ -19,12 +18,13 @@ var addCmd = &cobra.Command{
 		filePaths := args[1:]
 
 		fmt.Printf("imagePath %s, filePaths %s \n", imagePath, filePaths)
+		fmt.Printf("Not implemented. \n")
 
-		err := mkmyfat.Add(imagePath, filePaths)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		// err := mkmyfat.Add(imagePath, filePaths)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
 	},
 }
 

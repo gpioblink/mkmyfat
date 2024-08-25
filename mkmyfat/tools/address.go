@@ -1,5 +1,9 @@
 package tools
 
+func Clus2Sec(cluster uint32, clusPerSec uint8) uint32 {
+	return uint32(cluster * uint32(clusPerSec))
+}
+
 func Sec2Addr(sector uint32, sectorSize uint16) uint64 {
 	return uint64(sector * uint32(sectorSize))
 }

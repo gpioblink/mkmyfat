@@ -82,6 +82,9 @@ func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {
 	if bpb.BS_jmpBoot != [3]byte{0xeb, 0x58, 0x90} {
 		return nil, fmt.Errorf("file %s is not FAT32 file system", f.Name())
 	}
+
+	// TODO: バックアップセクタを確認し、一致しなければエラーを返す
+
 	return &bpb, nil
 }
 

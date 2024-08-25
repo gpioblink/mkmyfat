@@ -3,12 +3,19 @@ package mkmyfat
 import (
 	"encoding/binary"
 	"fmt"
-	"math"
 	"os"
-	"time"
 
-	. "gpioblink.com/app/makemyfat/mkmyfat/models"
+	"gpioblink.com/app/makemyfat/mkmyfat/models"
+	"gpioblink.com/app/makemyfat/mkmyfat/usecases"
 )
+
+func Create(imgPath string, diskSizeBytes int) error {
+	err := usecases.Create(imgPath, diskSizeBytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func PrintBPBFromFile(imgPath string) error {
 	f, err := os.Open(imgPath)
@@ -17,7 +24,7 @@ func PrintBPBFromFile(imgPath string) error {
 	}
 	defer f.Close()
 
-	var fat32BPB Fat32BPB
+	var fat32BPB models.Fat32BPB
 	err = binary.Read(f, binary.LittleEndian, &fat32BPB)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s: %s", imgPath, err)
@@ -26,87 +33,34 @@ func PrintBPBFromFile(imgPath string) error {
 	return nil
 }
 
-func Add(imgPath string, fileList []string) error {
-	// imgPathのファイルを開く
-	f, err := os.OpenFile(imgPath, os.O_RDWR, 0666)
-	if err != nil {
-		return fmt.Errorf("failed to open file %s: %s", imgPath, err)
-	}
-	defer f.Close()
-
-	// fileListのファイルが存在することを確認する
-	for _, file := range fileList {
-		if !Exists(file) {
-			return fmt.Errorf("file %s is not found", file)
-		}
-	}
-
-	// FAT32のBPBを読み込む
-	var bpb Fat32BPB
-	err = binary.Read(f, binary.LittleEndian, &bpb)
-	if err != nil {
-		return fmt.Errorf("failed to read file %s: %s", imgPath, err)
-	}
-
-	// imgPathのファイルがFAT32ファイルシステムであることを確認する
-	if bpb.BS_jmpBoot != [3]byte{0xeb, 0x58, 0x90} {
-		// TODO: これだけだと絶対条件不足なので、ちゃんと考える
-		return fmt.Errorf("file %s is not FAT32 file system", imgPath)
-	}
-
-	// imgPathのファイルにfileListのファイルを書き込む
-	for _, fileName := range fileList {
-
-		// ファイルを開く
-		src, err := os.Open(fileName)
-		if err != nil {
-			return fmt.Errorf("failed to open file %s: %s", fileName, err)
-		}
-		defer src.Close()
-
-		// ファイルのサイズを取得
-		fi, err := src.Stat()
-		if err != nil {
-			return fmt.Errorf("failed to get file info %s: %s", fileName, err)
-		}
-		fileSize := int(fi.Size())
-
-		// ファイルのクラスタ数を計算
-		clusterSize := int(bpb.BPB_SecPerClus) * int(bpb.BPB_BytsPerSec)
-		clusterCount := int(math.Ceil(float64(fileSize) / float64(clusterSize)))
-
-		dirEntry := NewDirectoryEntry(GetShortName(fileName), ATTR_ARCHIVE, time.Now(), uint32(clusterCount), uint32(fileSize))
-
-		// ルートディレクトリに書き込む
-		_, err = f.Seek(int64(int(bpb.BPB_BytsPerSec)*int(bpb.BPB_RsvdSecCnt)), 0)
-		if err != nil {
-			return fmt.Errorf("failed to seek file %s: %s", imgPath, err)
-		}
-
-		err = binary.Write(f, binary.LittleEndian, dirEntry)
-		if err != nil {
-			return fmt.Errorf("failed to write file %s: %s", imgPath, err)
-		}
-
-		// ファイルのデータを書き込む
-		_, err = f.Seek(int64(int(bpb.BPB_BytsPerSec)*int(int(bpb.BPB_RsvdSecCnt)+int(bpb.BPB_NumFATs)*int(bpb.BPB_FATSz32))), 0)
-		if err != nil {
-			return fmt.Errorf("failed to seek file %s: %s", imgPath, err)
-		}
-
-		buf := make([]byte, clusterSize)
-		for i := 0; i < clusterCount; i++ {
-			_, err = src.Read(buf)
-			if err != nil {
-				return fmt.Errorf("failed to read file %s: %s", fileName, err)
-			}
-			_, err = f.Write(buf)
-			if err != nil {
-				return fmt.Errorf("failed to write file %s: %s", imgPath, err)
-			}
-		}
-
-	}
-
-	return nil
+func PrintBPB(bpb models.Fat32BPB) {
+	fmt.Printf("BS_jmpBoot: %v\n", bpb.BS_jmpBoot)
+	fmt.Printf("BS_OEMName: %v\n", bpb.BS_OEMName)
+	fmt.Printf("BPB_BytsPerSec: %v\n", bpb.BPB_BytsPerSec)
+	fmt.Printf("BPB_SecPerClus: %v\n", bpb.BPB_SecPerClus)
+	fmt.Printf("BPB_RsvdSecCnt: %v\n", bpb.BPB_RsvdSecCnt)
+	fmt.Printf("BPB_NumFATs: %v\n", bpb.BPB_NumFATs)
+	fmt.Printf("BPB_RootEntCnt: %v\n", bpb.BPB_RootEntCnt)
+	fmt.Printf("BPB_TotSec16: %v\n", bpb.BPB_TotSec16)
+	fmt.Printf("BPB_Media: %v\n", bpb.BPB_Media)
+	fmt.Printf("BPB_FATSz16: %v\n", bpb.BPB_FATSz16)
+	fmt.Printf("BPB_SecPerTrk: %v\n", bpb.BPB_SecPerTrk)
+	fmt.Printf("BPB_NumHeads: %v\n", bpb.BPB_NumHeads)
+	fmt.Printf("BPB_HiddSec: %v\n", bpb.BPB_HiddSec)
+	fmt.Printf("BPB_TotSec32: %v\n", bpb.BPB_TotSec32)
+	fmt.Printf("BPB_FATSz32: %v\n", bpb.BPB_FATSz32)
+	fmt.Printf("BPB_ExtFlags: %v\n", bpb.BPB_ExtFlags)
+	fmt.Printf("BPB_FSVer: %v\n", bpb.BPB_FSVer)
+	fmt.Printf("BPB_RootClus: %v\n", bpb.BPB_RootClus)
+	fmt.Printf("BPB_FSInfo: %v\n", bpb.BPB_FSInfo)
+	fmt.Printf("BPB_BkBootSec: %v\n", bpb.BPB_BkBootSec)
+	fmt.Printf("BPB_Reserved: %v\n", bpb.BPB_Reserved)
+	fmt.Printf("BS_DrvNum: %v\n", bpb.BS_DrvNum)
+	fmt.Printf("BS_Reserved: %v\n", bpb.BS_Reserved)
+	fmt.Printf("BS_BootSig: %v\n", bpb.BS_BootSig)
+	fmt.Printf("BS_VolID: %v\n", bpb.BS_VolID)
+	fmt.Printf("BS_VolLab: %v\n", bpb.BS_VolLab)
+	fmt.Printf("BS_FilSysType: %v\n", bpb.BS_FilSysType)
+	fmt.Printf("BS_BootCode32: %v\n", bpb.BS_BootCode32)
+	fmt.Printf("BS_Sign: %v\n", bpb.BS_Sign)
 }
