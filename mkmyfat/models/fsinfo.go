@@ -19,7 +19,7 @@ type FSInfo struct {
 
 func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
 	// FSINFOの配置箇所を特定する
-	_, err := f.Seek(int64(tools.Sec2Addr(uint32(bpb.BPB_FSInfo), bpb.BPB_BytsPerSec)), 0)
+	_, err := f.Seek(int64(bpb.Sec2Addr(uint32(bpb.BPB_FSInfo))), 0)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
 	}
 
 	// バックアップセクタへも書き込み
-	_, err = f.Seek(int64(tools.Sec2Addr(uint32(bpb.BPB_BkBootSec+bpb.BPB_FSInfo), bpb.BPB_BytsPerSec)), 0)
+	_, err = f.Seek(int64(bpb.Sec2Addr(uint32(bpb.BPB_BkBootSec+bpb.BPB_FSInfo))), 0)
 	if err != nil {
 		return err
 	}

@@ -15,15 +15,15 @@ func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
 	// FATの数だけ繰り返し
 	for i := uint8(0); i < bpb.BPB_NumFATs; i++ {
 		// FATの配置箇所を特定する
-		fatStart := tools.FAT2Sec(bpb.BPB_RsvdSecCnt, bpb.BPB_FATSz32, i)
-		_, err := f.Seek(int64(tools.Sec2Addr(fatStart, bpb.BPB_BytsPerSec)), 0)
+		fatStart := bpb.FAT2Sec(i)
+		_, err := f.Seek(int64(bpb.Sec2Addr(fatStart)), 0)
 		if err != nil {
 			return err
 		}
 
 		// 値のある場所に書き込む
 		for key, value := range *fat {
-			_, err = f.Seek(int64(tools.Sec2Addr(fatStart, bpb.BPB_BytsPerSec))+int64(4*key), 0)
+			_, err = f.Seek(int64(bpb.Sec2Addr(fatStart))+int64(4*key), 0)
 			if err != nil {
 				return err
 			}

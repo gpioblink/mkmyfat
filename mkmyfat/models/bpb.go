@@ -56,7 +56,7 @@ func (bpb *Fat32BPB) Export(f *os.File) error {
 	}
 
 	// バックアップセクタへも書き込み
-	_, err = f.Seek(int64(tools.Sec2Addr(uint32(bpb.BPB_BkBootSec), bpb.BPB_BytsPerSec)), 0)
+	_, err = f.Seek(int64(bpb.Sec2Addr(uint32(bpb.BPB_BkBootSec))), 0)
 	if err != nil {
 		return err
 	}
@@ -142,4 +142,20 @@ func NewFat32BPB(diskSize int) *Fat32BPB {
 		BS_BootCode32: [420]byte{},
 		BS_Sign:       0xaa55,
 	}
+}
+
+func (bpb *Fat32BPB) Clus2Sec(cluster uint32) uint32 {
+	return uint32(cluster * uint32(bpb.BPB_SecPerClus))
+}
+
+func (bpb *Fat32BPB) Sec2Addr(sector uint32) uint64 {
+	return uint64(sector * uint32(bpb.BPB_BytsPerSec))
+}
+
+func (bpb *Fat32BPB) FAT2Sec(fatIndex uint8) uint32 {
+	return uint32(bpb.BPB_RsvdSecCnt) + uint32(fatIndex)*uint32(bpb.BPB_FATSz32)
+}
+
+func (bpb *Fat32BPB) CalcClusterNum(fileSize uint32) uint32 {
+	return fileSize / uint32(uint32(bpb.BPB_SecPerClus)*uint32(bpb.BPB_BytsPerSec))
 }

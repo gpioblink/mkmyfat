@@ -81,7 +81,7 @@ func (ec *EntryCluster) AddFileEntry(fileName string, fileSize uint32, lastModif
 	}
 
 	// ファイルサイズに必要なクラスタ分だけ連続したクラスタをFATに確保
-	clusterNum := tools.CalcClusterNum(fileSize, ec.bpb.BPB_SecPerClus, ec.bpb.BPB_BytsPerSec)
+	clusterNum := ec.bpb.CalcClusterNum(fileSize)
 	err = ec.fat.AllocateContinuesSectors(clusterFrom, int(clusterNum))
 	if err != nil {
 		return err
@@ -92,7 +92,7 @@ func (ec *EntryCluster) AddFileEntry(fileName string, fileSize uint32, lastModif
 }
 
 func (ec *EntryCluster) ExportRoot(bpb *Fat32BPB, f *os.File) error {
-	rootClusterAddr := tools.Sec2Addr(tools.Clus2Sec(bpb.BPB_RootClus, bpb.BPB_SecPerClus), bpb.BPB_BytsPerSec)
+	rootClusterAddr := ec.bpb.Sec2Addr(ec.bpb.Clus2Sec(bpb.BPB_RootClus))
 
 	_, err := f.Seek(int64(rootClusterAddr), 0)
 	if err != nil {
