@@ -33,10 +33,8 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 	defer f.Close()
 
 	img := models.NewFAT32Image(f, uint64(diskSizeBytes))
-	err = img.Export()
-	if err != nil {
-		return err
-	}
+
+	fmt.Println(img)
 
 	for i := 0; i < numOfFiles; i++ {
 		// LFNのデバッグ用に長いファイル名を使用した
@@ -44,6 +42,11 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 		if err != nil {
 			return err
 		}
+	}
+
+	err = img.Export()
+	if err != nil {
+		return err
 	}
 
 	fmt.Println(img)
