@@ -2,6 +2,7 @@ package models
 
 import (
 	"os"
+	"time"
 )
 
 type FAT32Image struct {
@@ -15,9 +16,9 @@ type FAT32Image struct {
 // func (f *FAT32Image) GetRootFileList() error {
 // }
 
-// func (f *FAT32Image) AddEmptyFileToRoot(fileName string, fileSizeByte uint32) error {
-
-// }
+func (f *FAT32Image) AddEmptyFileToRoot(fileName string, fileSizeByte uint32) error {
+	return f.rootClus.AddFileEntry(fileName, fileSizeByte, time.Now())
+}
 
 func (img *FAT32Image) Export() error {
 	err := img.fat32BPB.Export(img.file)

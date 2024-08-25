@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
@@ -13,24 +14,58 @@ import (
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
-	Use:   "create <imagePath> <fileSize> [<file list (ex: a.txt b.txt c.txt ...)>]",
+	Use:   "create <imagePath> <fileSize> [<fileExt> <numOfFiles> <eachFileSize>]",
 	Short: "Create a new FAT32 image",
 	Run: func(cmd *cobra.Command, args []string) {
-		imagePath := args[0]
-		fileSizeText := args[1]
+		if len(args) <= 2 {
+			imagePath := args[0]
+			fileSizeText := args[1]
 
-		fileSize, err := humanize.ParseBytes(fileSizeText)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+			fileSize, err := humanize.ParseBytes(fileSizeText)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 
-		fmt.Printf("imagePath %s, fileSize %d \n", imagePath, fileSize)
+			fmt.Printf("imagePath %s, fileSize %d \n", imagePath, fileSize)
 
-		err = mkmyfat.Create(imagePath, int(fileSize))
-		if err != nil {
-			fmt.Println(err)
-			return
+			err = mkmyfat.Create(imagePath, int(fileSize))
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		} else {
+			imagePath := args[0]
+			fileSizeText := args[1]
+			fileExt := args[2]
+			numOfFilesText := args[3]
+			eachFileSizeText := args[4]
+
+			fileSize, err := humanize.ParseBytes(fileSizeText)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			numOfFiles, err := strconv.Atoi(numOfFilesText)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			eachFileSize, err := humanize.ParseBytes(eachFileSizeText)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			fmt.Printf("imagePath %s, fileSize %d, fileExt %s, numOfFiles %d, eachFileSize %d \n", imagePath, fileSize, fileExt, numOfFiles, eachFileSize)
+
+			err = mkmyfat.CreateWithEmptyFiles(imagePath, int(fileSize), fileExt, int(numOfFiles), int(eachFileSize))
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 	},
 }
