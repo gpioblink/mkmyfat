@@ -144,8 +144,20 @@ func NewFat32BPB(diskSize int) *Fat32BPB {
 	}
 }
 
+const RESERVED_CLUSTERS = 2
+
+func (bpb *Fat32BPB) RootSec() uint32 {
+	return uint32(bpb.FAT2Sec(bpb.BPB_NumFATs))
+}
+
+func (bpb *Fat32BPB) UserSec() uint32 {
+	// return bpb.RootSec() + uint32(bpb.BPB_RootEntCnt*32/bpb.BPB_BytsPerSec)
+	// FAT32ではルートディレクトリとして特別なセクタは存在しない
+	return bpb.RootSec()
+}
+
 func (bpb *Fat32BPB) Clus2Sec(cluster uint32) uint32 {
-	return uint32(cluster * uint32(bpb.BPB_SecPerClus))
+	return uint32(bpb.UserSec() + (cluster-RESERVED_CLUSTERS)*uint32(bpb.BPB_SecPerClus))
 }
 
 func (bpb *Fat32BPB) Sec2Addr(sector uint32) uint64 {
