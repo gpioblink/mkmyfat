@@ -35,7 +35,7 @@ func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
 		return err
 	}
 
-	err = binary.Write(f, binary.LittleEndian, bpb)
+	err = binary.Write(f, binary.LittleEndian, fi)
 	if err != nil {
 		return err
 	}
