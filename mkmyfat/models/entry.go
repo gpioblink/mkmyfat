@@ -81,7 +81,7 @@ func (ec *EntryCluster) AddFileEntry(fileName string, fileSize uint32, lastModif
 	}
 
 	// ファイルサイズに必要なクラスタ分だけ連続したクラスタをFATに確保
-	clusterNum := tools.CalcClusterNum(fileSize, uint8(ec.bpb.BPB_BytsPerSec), uint16(ec.bpb.BPB_SecPerClus))
+	clusterNum := tools.CalcClusterNum(fileSize, ec.bpb.BPB_SecPerClus, ec.bpb.BPB_BytsPerSec)
 	err = ec.fat.AllocateContinuesSectors(clusterFrom, int(clusterNum))
 	if err != nil {
 		return err
