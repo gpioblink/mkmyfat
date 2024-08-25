@@ -49,7 +49,7 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 		return err
 	}
 
-	fmt.Println(img)
+	fmt.Println(img.GetRootFileList())
 
 	return nil
 }

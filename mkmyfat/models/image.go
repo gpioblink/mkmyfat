@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"os"
 	"time"
 )
@@ -13,8 +14,20 @@ type FAT32Image struct {
 	rootClus *EntryCluster
 }
 
-// func (f *FAT32Image) GetRootFileList() error {
-// }
+func (f *FAT32Image) GetRootFileList() string {
+	res := "***** Root File List *****\n"
+	for _, v := range f.rootClus.cluster {
+		if !v.IsLongName() {
+			size := v.(*DirectoryEntry).DIR_FileSize
+			clus := uint32(v.(*DirectoryEntry).DIR_FstClusLO) + uint32(v.(*DirectoryEntry).DIR_FstClusHI)<<16
+			sec := f.fat32BPB.Clus2Sec(clus)
+			addrS := f.fat32BPB.Sec2Addr(sec)
+			addrE := uint32(addrS) + size
+			res += fmt.Sprintf("%s[%dbytes]: %#x-%#x clus=%d\n", v.(*DirectoryEntry).DIR_Name, size, addrS, addrE, clus)
+		}
+	}
+	return res
+}
 
 func (f *FAT32Image) AddEmptyFileToRoot(fileName string, fileSizeByte uint32) error {
 	return f.rootClus.AddFileEntry(fileName, fileSizeByte, time.Now())
@@ -45,7 +58,7 @@ func (img *FAT32Image) Export() error {
 }
 
 func (img *FAT32Image) String() string {
-	return img.fat32BPB.String() + img.fsInfo.String() + img.fat.String() + img.rootClus.String()
+	return img.fat32BPB.String() + img.fsInfo.String() /*+ img.fat.String() + img.rootClus.String()*/
 }
 
 func NewFAT32Image(file *os.File, size uint64) *FAT32Image {
