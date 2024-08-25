@@ -70,7 +70,7 @@ func (bpb *Fat32BPB) Export(f *os.File) error {
 }
 
 func (bpb *Fat32BPB) String() string {
-	return tools.PrettyPrintStruct(bpb)
+	return tools.PrettyPrintStruct("BPB", bpb)
 }
 
 func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {

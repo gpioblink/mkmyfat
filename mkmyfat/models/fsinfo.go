@@ -44,7 +44,7 @@ func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
 }
 
 func (fi *FSInfo) String() string {
-	return tools.PrettyPrintStruct(fi)
+	return tools.PrettyPrintStruct("FSInfo", fi)
 }
 
 func NewFSInfo() *FSInfo {

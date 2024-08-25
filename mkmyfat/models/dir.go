@@ -55,7 +55,7 @@ func (dc *DirectoryCluster) ExportRoot(bpb *Fat32BPB, f *os.File) error {
 }
 
 func (dc *DirectoryCluster) String() string {
-	return tools.PrettyPrintStruct(dc)
+	return tools.PrettyPrintStruct("DIR", dc)
 }
 
 func NewDirectoryCluster() *DirectoryCluster {

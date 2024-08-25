@@ -37,7 +37,7 @@ func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
 }
 
 func (fat *FAT) String() string {
-	return tools.PrettyPrintStruct(fat)
+	return tools.PrettyPrintStruct("FAT", fat)
 }
 
 func NewFAT() *FAT {
