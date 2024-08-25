@@ -67,7 +67,7 @@ func (ec *EntryCluster) AddFileEntry(fileName string, fileSize uint32, lastModif
 		tmpEntries = append(tmpEntries, lfn)
 	}
 
-	// 作成したエントリの順番を変更 (TODO: mkfatの仕様に合わせたが本当に必要かは不明)
+	// 作成したエントリの順番を変更 (TODO: mkfs.fatの仕様に合わせたが本当に必要かは不明)
 	for i, j := 0, len(tmpEntries)-1; i < j; i, j = i+1, j-1 {
 		tmpEntries[i], tmpEntries[j] = tmpEntries[j], tmpEntries[i]
 	}

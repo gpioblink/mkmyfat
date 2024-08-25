@@ -38,7 +38,7 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 
 	for i := 0; i < numOfFiles; i++ {
 		// LFNのデバッグ用に長いファイル名を使用した
-		err := img.AddEmptyFileToRoot(fmt.Sprintf("fil%deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.%s", i, fileExt), uint32(eachFileSize))
+		err := img.AddEmptyFileToRoot(fmt.Sprintf("iam%drdverylongfilenamehaveanicedayyouareverybuetiful.%s", i, fileExt), uint32(eachFileSize))
 		if err != nil {
 			return err
 		}
