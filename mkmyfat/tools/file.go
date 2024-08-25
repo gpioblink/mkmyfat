@@ -14,9 +14,7 @@ func CreateSpecificatedSizeFileWhenNotExsisted(imgPath string, size uint64) (*os
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file %s: %s", imgPath, err)
 	}
-	// defer f.Close()
 
-	// 容量の確保
 	err = os.Truncate(imgPath, int64(size))
 	if err != nil {
 		return f, fmt.Errorf("failed to truncate file %s: %s", imgPath, err)

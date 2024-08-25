@@ -10,7 +10,7 @@ func PrettyPrintStruct(dataName string, s interface{}) string {
 
 	val := reflect.ValueOf(s)
 
-	// ポインタであれば解参照する
+	// ポインタであれば実態を参照する
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}

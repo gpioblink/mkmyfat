@@ -9,13 +9,14 @@ type FAT32Image struct {
 	fat32BPB *Fat32BPB
 	fsInfo   *FSInfo
 	fat      *FAT
-	rootClus *DirectoryCluster
+	rootClus *EntryCluster
 }
 
 // func (f *FAT32Image) GetRootFileList() error {
 // }
 
-// func (f *FAT32Image) AddFile(filePath string) error {
+// func (f *FAT32Image) AddEmptyFileToRoot(fileName string, fileSizeByte uint32) error {
+
 // }
 
 func (img *FAT32Image) Export() error {
@@ -50,7 +51,7 @@ func NewFAT32Image(file *os.File, size uint64) *FAT32Image {
 	bpb := NewFat32BPB(int(size))
 	fsInfo := NewFSInfo()
 	fat := NewFAT()
-	rootClus := NewDirectoryCluster()
+	rootClus := NewEntryCluster()
 
 	return &FAT32Image{
 		file:     file,

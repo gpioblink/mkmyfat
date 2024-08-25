@@ -1,8 +1,6 @@
 package models
 
 import (
-	"encoding/binary"
-	"os"
 	"time"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
@@ -31,37 +29,8 @@ type DirectoryEntry struct {
 	DIR_FileSize     uint32   // バイト単位のファイルサイズ。ディレクトリの場合は常に0
 }
 
-type DirectoryCluster struct {
-	cluster []DirectoryEntry
-}
-
-func (dc *DirectoryCluster) ExportRoot(bpb *Fat32BPB, f *os.File) error {
-	rootClusterAddr := tools.Sec2Addr(tools.Clus2Sec(bpb.BPB_RootClus, bpb.BPB_SecPerClus), bpb.BPB_BytsPerSec)
-
-	// rootClusterの配置箇所に移動する
-	_, err := f.Seek(int64(rootClusterAddr), 0)
-	if err != nil {
-		return err
-	}
-
-	for _, v := range dc.cluster {
-		err = binary.Write(f, binary.LittleEndian, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (dc *DirectoryCluster) String() string {
-	return tools.PrettyPrintStruct("DIR", dc)
-}
-
-func NewDirectoryCluster() *DirectoryCluster {
-	return &DirectoryCluster{
-		cluster: make([]DirectoryEntry, 0),
-	}
+func (de *DirectoryEntry) IsLongName() bool {
+	return (de.DIR_Attr & ATTR_LONG_NAME) != 0
 }
 
 func NewDirectoryEntry(shortName [11]byte, attrFlag uint8, writeDateTime time.Time, clusterFrom uint32, fileSize uint32) *DirectoryEntry {

@@ -12,6 +12,7 @@ func Create(imgPath string, diskSizeBytes int) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	img := models.NewFAT32Image(f, uint64(diskSizeBytes))
 	err = img.Export()

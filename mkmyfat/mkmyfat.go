@@ -17,6 +17,8 @@ func Create(imgPath string, diskSizeBytes int) error {
 	return nil
 }
 
+/* --- (deprecated) old funcs below --- */
+
 func PrintBPBFromFile(imgPath string) error {
 	f, err := os.Open(imgPath)
 	if err != nil {
