@@ -6,13 +6,15 @@ import (
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
 
-const ATTR_READ_ONLY = 0x01
-const ATTR_HIDDEN = 0x02
-const ATTR_SYSTEM = 0x04
-const ATTR_VOLUME_ID = 0x08
-const ATTR_DIRECTORY = 0x10
-const ATTR_ARCHIVE = 0x20
-const ATTR_LONG_NAME = 0x0f
+const (
+	ATTR_READ_ONLY = 0x01
+	ATTR_HIDDEN    = 0x02
+	ATTR_SYSTEM    = 0x04
+	ATTR_VOLUME_ID = 0x08
+	ATTR_DIRECTORY = 0x10
+	ATTR_ARCHIVE   = 0x20
+	ATTR_LONG_NAME = 0x0f
+)
 
 type DirectoryEntry struct {
 	DIR_Name         [11]byte // 短いファイル名

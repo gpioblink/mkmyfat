@@ -51,7 +51,7 @@ func NewFAT32Image(file *os.File, size uint64) *FAT32Image {
 	bpb := NewFat32BPB(int(size))
 	fsInfo := NewFSInfo()
 	fat := NewFAT()
-	rootClus := NewEntryCluster()
+	rootClus := NewEntryCluster(bpb, fat)
 
 	return &FAT32Image{
 		file:     file,

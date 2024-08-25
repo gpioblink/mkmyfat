@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/binary"
+	"fmt"
+	"math"
 	"os"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
@@ -34,6 +36,39 @@ func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
 	}
 
 	return nil
+}
+
+func (fat *FAT) AllocateContinuesSectors(clusterFrom uint32, num int) error {
+	// 連続したクラスタをFATに確保
+	(*fat)[clusterFrom] = uint32(clusterFrom + 1)
+	for i := uint32(0); i < uint32(num); i++ {
+		if (*fat)[clusterFrom+i] != 0x0 {
+			return fmt.Errorf("cluster %d is already used", i)
+		}
+		(*fat)[clusterFrom+i] = uint32(i + 1)
+	}
+	(*fat)[clusterFrom+uint32(num)-1] = 0x0fffffff
+	return nil
+}
+
+func (fat *FAT) MarkAsUsed(cluster uint32) error {
+	if (*fat)[cluster] != 0x0 {
+		return fmt.Errorf("cluster %d is already used", cluster)
+	}
+	(*fat)[cluster] = 0x0fffffff
+	return nil
+}
+
+func (fat *FAT) GetNextFreeCluster() (uint32, error) {
+	var i uint32 = 0
+	for i < math.MaxUint32 { // FIXME: 本来はFAT32の最大クラスタ数を取得するべき
+		// キーが存在しなければ、それが次の使用可能なインデックス
+		if _, exists := (*fat)[i]; !exists {
+			return i, nil
+		}
+		i++
+	}
+	return 0, fmt.Errorf("no free cluster")
 }
 
 func (fat *FAT) String() string {
