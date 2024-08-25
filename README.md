@@ -1,28 +1,43 @@
 # mkmyfat
 
+「中身がホスト側から触らずに変わっていくUSBメモリ」のためのFATイメージを作成するツールです。
+
+```
+git clone git@github.com:gpioblink/mkmyfat.git
+cd mkmyfat
+go run main.go create test1.img 128MiB mp4 5 1MiB
+```
+
 ## Usage
 
-### カラオケ用バイナリファイルの作成
+### 「中身がホスト側から触らずに変わっていくUSBメモリ」用のFATイメージの作成
 
-カラオケ用USBメモリに使用するためのイメージを作成できます。
+「中身がホスト側から触らずに変わっていくUSBメモリ」に使用するためのイメージを作成できます。
+このツールで作成したFATは、全てのファイルが必ず連続したクラスタに保管されます。
 
-指定した容量のファイルを連続したクラスタで保存するように作成します。
+そのため、各種管理用のパラメータを一切変えずに、ファイルのコンテンツのアドレスを直接書き換えることが可能です。
+
+このツールでフォーマットしたイメージを、今後作成予定の、書き換えに対応した「Mass Storage Gadget」で用いることで、「中身がホスト側から触らずに変わっていくUSBメモリ」を作成できるようになります。
 
 
 ```
-go run main.go karaoke <filename> <size> <fileExt> <eachFileSize> <numberOfFiles>
+go run main.go create <filename> <size> <fileExt> <eachFileSize> <numberOfFiles>
 ```
 
 実行イメージ
 
 ```
-go run main.go karaoke out.img 1024MiB mp4 8 128MiB
+$ go run main.go create test1.img 128MiB mp4 5 1MiB 
+imagePath test1.img, fileSize 134217728, fileExt mp4, numOfFiles 5, eachFileSize 1048576 
 
-1.mp4: 0x00102000 -0xXXXXXXXX (sector 2-X)
-2.mp4:
-3.mp4:
-4.mp4:
-5.mp4:
+...
+
+***** Root File List *****
+IAM0RDVEMP4[1048576bytes]: 0x102400-0x202400 clus=3
+IAM1RDVEMP4[1048576bytes]: 0x202400-0x302400 clus=1027
+IAM2RDVEMP4[1048576bytes]: 0x302400-0x402400 clus=2051
+IAM3RDVEMP4[1048576bytes]: 0x402400-0x502400 clus=3075
+IAM4RDVEMP4[1048576bytes]: 0x502400-0x602400 clus=4099
 ```
 
 ### 新しいファイルの作成
