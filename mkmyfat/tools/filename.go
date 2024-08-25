@@ -79,7 +79,7 @@ func GetShortNameFromLongName(longName string) ([11]byte, error) {
 
 	for i := 8; i < 11; i++ {
 		if i-8 < len(ext) {
-			shortName[i] = ext[i-8]
+			shortName[i] = ext[i-7]
 		}
 	}
 
