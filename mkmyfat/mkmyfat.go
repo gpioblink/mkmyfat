@@ -25,6 +25,14 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 	return nil
 }
 
+func Insert(imgPath string, filePath string, entryNum int) error {
+	err := usecases.Insert(imgPath, filePath, entryNum)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func ShowImageInfo(imgPath string) error {
 	err := usecases.ShowImageInfo(imgPath)
 	if err != nil {

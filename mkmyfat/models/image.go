@@ -13,7 +13,30 @@ type FAT32Image struct {
 	rootClus *EntryCluster
 }
 
-func (f *FAT32Image) GetRootFileList() string {
+func (f *FAT32Image) GetRootFileList() []Entry {
+	fileEntry := []Entry{}
+	for _, v := range f.rootClus.cluster {
+		if !v.IsLongName() {
+			fileEntry = append(fileEntry, v)
+		}
+	}
+	return fileEntry
+}
+
+func (f *FAT32Image) GetRootFileInfo(entryNum int) (addr uint64, size uint32, err error) {
+	fileList := f.GetRootFileList()
+	if entryNum < 0 || entryNum >= len(fileList) {
+		return 0, 0, fmt.Errorf("entryNum %d is out of range", entryNum)
+	}
+	v := fileList[entryNum]
+	size = v.(*DirectoryEntry).DIR_FileSize
+	clus := uint32(v.(*DirectoryEntry).DIR_FstClusLO) + uint32(v.(*DirectoryEntry).DIR_FstClusHI)<<16
+	sec := f.fat32BPB.Clus2Sec(clus)
+	addr = f.fat32BPB.Sec2Addr(sec)
+	return addr, size, nil
+}
+
+func (f *FAT32Image) PrintRootFileList() string {
 	res := "***** Root File List *****\n"
 	for _, v := range f.rootClus.cluster {
 		if !v.IsLongName() {

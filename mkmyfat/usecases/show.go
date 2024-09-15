@@ -36,7 +36,7 @@ func ShowImageInfo(imgPath string) error {
 	}
 
 	fmt.Println(img)
-	fmt.Println(img.GetRootFileList())
+	fmt.Println(img.PrintRootFileList())
 
 	if isMBR {
 		fmt.Println(img.GetRootFileListWithMBR(op.(tools.MBROperator).GetMBRSectionReader().Size()))

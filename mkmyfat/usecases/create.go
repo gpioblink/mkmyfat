@@ -49,7 +49,7 @@ func Create(imgPath string, diskSizeBytes int, fileExt string, numOfFiles int, e
 		return err
 	}
 
-	fmt.Println(img.GetRootFileList())
+	fmt.Println(img.PrintRootFileList())
 
 	if withMBR {
 		fmt.Println(img.GetRootFileListWithMBR(op.(tools.MBROperator).GetMBRSectionReader().Size()))
