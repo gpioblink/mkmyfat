@@ -4,6 +4,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"gpioblink.com/app/makemyfat/mkmyfat"
 )
@@ -15,7 +17,10 @@ var showCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		imagePath := args[0]
 		// fmt.Print(mkmyfat.PrintBPBFromFile(imagePath))
-		mkmyfat.ShowImageInfo(imagePath)
+		err := mkmyfat.ShowImageInfo(imagePath)
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
 
