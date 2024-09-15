@@ -61,3 +61,13 @@ func (m *MBRFAT32Manager) GetFAT32OffsetWriter() *io.OffsetWriter {
 func NewMBRFAT32Manager(f *os.File) *MBRFAT32Manager {
 	return &MBRFAT32Manager{f: f}
 }
+
+func IsMBR(f *os.File) bool {
+	// FIXME: これだけだと明らかにMBRかどうかの判定が不十分
+	firstSector := make([]byte, 512)
+	_, err := f.Read(firstSector)
+	if err != nil {
+		return false
+	}
+	return firstSector[0x1c2] == 0x0c
+}

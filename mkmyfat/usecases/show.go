@@ -2,10 +2,10 @@ package usecases
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/models"
+	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
 
 func ShowImageInfo(imgPath string) error {
@@ -15,12 +15,22 @@ func ShowImageInfo(imgPath string) error {
 	}
 	defer f.Close()
 
-	fileInfo, err := f.Stat()
-	if err != nil {
-		return fmt.Errorf("failed to get file info: %s", err)
+	isMBR := tools.IsMBR(f)
+
+	var op tools.FAT32Operator
+
+	if isMBR {
+		op = tools.NewMBRFAT32Manager(f)
+		mbr, err := models.ImportMBR(op.(tools.MBROperator).GetMBRSectionReader())
+		if err != nil {
+			return fmt.Errorf("failed to import MBR: %s", err)
+		}
+		fmt.Println(mbr)
+	} else {
+		op = tools.NewSimpleFAT32Manager(f)
 	}
 
-	img, err := models.ImportFAT32Image(io.NewSectionReader(f, 0, fileInfo.Size()))
+	img, err := models.ImportFAT32Image(op.GetFAT32SectionReader())
 	if err != nil {
 		return fmt.Errorf("failed to import image: %s", err)
 	}
