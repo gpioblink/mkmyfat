@@ -43,7 +43,7 @@ func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
 }
 
 func ImportFAT(bpb *Fat32BPB, f *os.File) (*FAT, error) {
-	var fat FAT
+	fat := make(FAT)
 	fatPerSec := bpb.BPB_BytsPerSec / 4
 	tmpSec := make([]uint32, fatPerSec)
 
