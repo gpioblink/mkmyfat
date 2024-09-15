@@ -57,6 +57,36 @@ func (img *FAT32Image) Export() error {
 	return nil
 }
 
+func ImportFAT32Image(f *os.File) (*FAT32Image, error) {
+	bpb, err := ImportFAT32BPB(f)
+	if err != nil {
+		return nil, err
+	}
+
+	fsInfo, err := ImportFSInfo(bpb, f)
+	if err != nil {
+		return nil, err
+	}
+
+	fat, err := ImportFAT(bpb, f)
+	if err != nil {
+		return nil, err
+	}
+
+	rootClus, err := ImportRoot(bpb, fat, f)
+	if err != nil {
+		return nil, err
+	}
+
+	return &FAT32Image{
+		file:     f,
+		fat32BPB: bpb,
+		fsInfo:   fsInfo,
+		fat:      fat,
+		rootClus: rootClus,
+	}, nil
+}
+
 func (img *FAT32Image) String() string {
 	return img.fat32BPB.String() + img.fsInfo.String() /*+ img.fat.String() + img.rootClus.String()*/
 }

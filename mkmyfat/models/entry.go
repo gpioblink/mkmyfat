@@ -1,8 +1,10 @@
 package models
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -89,6 +91,41 @@ func (ec *EntryCluster) AddFileEntry(fileName string, fileSize uint32, lastModif
 
 	ec.cluster = append(ec.cluster, tmpEntries...)
 	return nil
+}
+
+func ImportRoot(bpb *Fat32BPB, fat *FAT, f *os.File) (*EntryCluster, error) {
+	entries := []Entry{}
+	entSize := 32
+	tmpEnt := [32]byte{}
+
+	// FIXME: とりあえず最初のクラスタしか見てないので、他のクラスタも見るようにする
+
+	for i := uint32(0); i < uint32(bpb.BPB_BytsPerSec)*uint32(bpb.BPB_SecPerClus)/uint32(entSize); i++ {
+		sectionReader := io.NewSectionReader(f, int64(bpb.Sec2Addr(bpb.UserSec()))+int64(i*uint32(entSize)), int64(entSize))
+		err := binary.Read(sectionReader, binary.LittleEndian, &tmpEnt)
+		if err != nil {
+			return nil, err
+		}
+		reader := bytes.NewReader(tmpEnt[:])
+		// tmpEntのタイプがlfnかどうかで処理を分ける
+		if tmpEnt[11] == 0x0f {
+			var lfn LongFileName
+			err := binary.Read(reader, binary.LittleEndian, &lfn)
+			if err != nil {
+				return nil, err
+			}
+			entries = append(entries, &lfn)
+		} else if tmpEnt[0] != 0x00 {
+			var de DirectoryEntry
+			err := binary.Read(reader, binary.LittleEndian, &de)
+			if err != nil {
+				return nil, err
+			}
+			entries = append(entries, &de)
+		}
+	}
+
+	return &EntryCluster{entries, bpb, fat}, nil
 }
 
 func (ec *EntryCluster) ExportRoot(bpb *Fat32BPB, f *os.File) error {

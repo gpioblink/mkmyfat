@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"math"
 	"os"
 
@@ -12,6 +13,9 @@ import (
 type FAT map[uint32]uint32
 
 func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
+
+	// TODO: こんな1個ずつ読むのは遅いので、もっと効率的な方法を考える
+
 	// FATの数だけ繰り返し
 	for i := uint8(0); i < bpb.BPB_NumFATs; i++ {
 		// FATの配置箇所を特定する
@@ -36,6 +40,49 @@ func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
 	}
 
 	return nil
+}
+
+func ImportFAT(bpb *Fat32BPB, f *os.File) (*FAT, error) {
+	var fat FAT
+	fatPerSec := bpb.BPB_BytsPerSec / 4
+	tmpSec := make([]uint32, fatPerSec)
+
+	for i := uint32(0); i < bpb.BPB_FATSz32; i++ {
+		// FATを1セクタ単位で読み込み
+		sectionReader := io.NewSectionReader(f, int64(bpb.Sec2Addr(bpb.FAT2Sec(0)+i)), int64(bpb.BPB_BytsPerSec))
+		err := binary.Read(sectionReader, binary.LittleEndian, &tmpSec)
+		if err != nil {
+			return nil, err
+		}
+		// i個ずつfatに格納
+		for j := 0; j < len(tmpSec); j++ {
+			if tmpSec[j] != 0 {
+				fat[uint32(i*uint32(fatPerSec)+uint32(j))] = tmpSec[j]
+			}
+		}
+	}
+
+	// 別のFATがある場合、それぞれが一致しているか確認する
+	for i := uint8(1); i < bpb.BPB_NumFATs; i++ {
+		for j := uint32(0); j < bpb.BPB_FATSz32; j++ {
+			// FATを1セクタ単位で読み込み
+			sectionReader := io.NewSectionReader(f, int64(bpb.Sec2Addr(bpb.FAT2Sec(i)+j)), int64(bpb.BPB_BytsPerSec))
+			err := binary.Read(sectionReader, binary.LittleEndian, &tmpSec)
+			if err != nil {
+				return nil, err
+			}
+			// i個ずつfatに格納
+			for k := 0; k < len(tmpSec); k++ {
+				if tmpSec[k] != 0 {
+					if fat[uint32(j*uint32(fatPerSec)+uint32(k))] != tmpSec[k] {
+						return nil, fmt.Errorf("FAT%d is not matched with FAT0", i)
+					}
+				}
+			}
+		}
+	}
+
+	return &fat, nil
 }
 
 func (fat *FAT) AllocateContinuesSectors(clusterFrom uint32, num int) error {

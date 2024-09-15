@@ -2,7 +2,10 @@ package models
 
 import (
 	"encoding/binary"
+	"fmt"
+	"io"
 	"os"
+	"reflect"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
@@ -41,6 +44,35 @@ func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
 	}
 
 	return nil
+}
+
+func ImportFSInfo(bpb *Fat32BPB, f *os.File) (*FSInfo, error) {
+	var fi FSInfo
+	var fiBk FSInfo
+
+	// FSINFOを構造体に読み込む
+	sectionReader := io.NewSectionReader(f, int64(bpb.Sec2Addr(uint32(bpb.BPB_FSInfo))), int64(bpb.BPB_BytsPerSec))
+	err := binary.Read(sectionReader, binary.LittleEndian, &fi)
+	if err != nil {
+		return nil, err
+	}
+
+	if fi.FSI_LeadSig != 0x41615252 || fi.FSI_StrucSig != 0x61417272 || fi.FSI_TrailSig != 0xaa550000 {
+		return nil, fmt.Errorf("file %s has bad FSINFO", f.Name())
+	}
+
+	// バックアップセクタを確認し、一致しなければエラーを返す
+	sectionReader = io.NewSectionReader(f, int64(bpb.Sec2Addr(uint32(bpb.BPB_BkBootSec+bpb.BPB_FSInfo))), int64(bpb.BPB_BytsPerSec))
+	err = binary.Read(sectionReader, binary.LittleEndian, &fiBk)
+	if err != nil {
+		return nil, err
+	}
+
+	if !reflect.DeepEqual(fi, fiBk) {
+		return nil, fmt.Errorf("file %s has bad backup FSINFO", f.Name())
+	}
+
+	return &fi, nil
 }
 
 func (fi *FSInfo) String() string {

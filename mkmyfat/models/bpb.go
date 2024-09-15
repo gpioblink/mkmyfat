@@ -98,7 +98,7 @@ func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {
 	}
 
 	if !reflect.DeepEqual(bpb, bpbBk) {
-		return nil, fmt.Errorf("file %s is not valid FAT32 file system", f.Name())
+		return nil, fmt.Errorf("file %s has bad backup FAT32 file system", f.Name())
 	}
 
 	return &bpb, nil
