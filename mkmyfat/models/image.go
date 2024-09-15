@@ -22,7 +22,26 @@ func (f *FAT32Image) GetRootFileList() string {
 			sec := f.fat32BPB.Clus2Sec(clus)
 			addrS := f.fat32BPB.Sec2Addr(sec)
 			addrE := uint32(addrS) + size
-			res += fmt.Sprintf("%s[%dbytes]: %#x-%#x clus=%d\n", v.(*DirectoryEntry).DIR_Name, size, addrS, addrE, clus)
+			res += fmt.Sprintf("%s[%dbytes]: %#016x-%#016x clus=%d\n", v.(*DirectoryEntry).DIR_Name, size, addrS, addrE, clus)
+		}
+	}
+	return res
+}
+
+func (f *FAT32Image) GetRootFileListWithMBR(mbrSize int64) string {
+	res := "***** Root File List (MBR Shifted) *****\n"
+	mbrSec := mbrSize / int64(f.fat32BPB.BPB_BytsPerSec)
+	for _, v := range f.rootClus.cluster {
+		if !v.IsLongName() {
+			size := v.(*DirectoryEntry).DIR_FileSize
+			clus := uint32(v.(*DirectoryEntry).DIR_FstClusLO) + uint32(v.(*DirectoryEntry).DIR_FstClusHI)<<16
+			sec := f.fat32BPB.Clus2Sec(clus)
+			addrS := f.fat32BPB.Sec2Addr(sec) + uint64(mbrSize)
+			addrE := uint32(addrS) + size
+			lbaS := sec + uint32(mbrSec)
+			lbaE := lbaS + size/uint32(f.fat32BPB.BPB_BytsPerSec)
+
+			res += fmt.Sprintf("%s[%dbytes]: LBA %#08x-%#08x %#016x-%#016x clus=%d\n", v.(*DirectoryEntry).DIR_Name, size, lbaS, lbaE, addrS, addrE, clus)
 		}
 	}
 	return res
