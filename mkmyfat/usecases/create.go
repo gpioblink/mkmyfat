@@ -26,8 +26,6 @@ func Create(imgPath string, diskSizeBytes int, fileExt string, numOfFiles int, e
 
 	img := models.NewFAT32Image(uint64(op.GetFAT32SectionReader().Size()))
 
-	fmt.Println(img)
-
 	for i := 0; i < numOfFiles; i++ {
 		// LFNのデバッグ用に長いファイル名を使用した
 		err := img.AddEmptyFileToRoot(fmt.Sprintf("%d.%s", i, fileExt), uint32(eachFileSize))
@@ -43,6 +41,8 @@ func Create(imgPath string, diskSizeBytes int, fileExt string, numOfFiles int, e
 		}
 		fmt.Println(mbr)
 	}
+
+	fmt.Println(img)
 
 	err = img.Export(op.GetFAT32OffsetWriter())
 	if err != nil {
