@@ -3,9 +3,11 @@ package models
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"math"
 	"math/rand/v2"
 	"os"
+	"reflect"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
@@ -75,6 +77,7 @@ func (bpb *Fat32BPB) String() string {
 
 func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {
 	var bpb Fat32BPB
+	var bpbBk Fat32BPB
 	// FAT32のBPBを構造体に読み込む
 	err := binary.Read(f, binary.LittleEndian, &bpb)
 	if err != nil {
@@ -87,7 +90,16 @@ func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {
 		return nil, fmt.Errorf("file %s is not FAT32 file system", f.Name())
 	}
 
-	// TODO: バックアップセクタを確認し、一致しなければエラーを返す
+	// バックアップセクタを確認し、一致しなければエラーを返す
+	sectionReader := io.NewSectionReader(f, int64(bpb.BPB_BkBootSec*bpb.BPB_BytsPerSec), int64(bpb.BPB_BytsPerSec))
+	err = binary.Read(sectionReader, binary.LittleEndian, &bpbBk)
+	if err != nil {
+		return nil, err
+	}
+
+	if !reflect.DeepEqual(bpb, bpbBk) {
+		return nil, fmt.Errorf("file %s is not valid FAT32 file system", f.Name())
+	}
 
 	return &bpb, nil
 }
@@ -97,7 +109,7 @@ func NewFat32BPB(diskSize int) *Fat32BPB {
 	const FAT32_ENTRY_SIZE_BYTE = 4
 
 	bytesPerSector := 512
-	sectorsPerCluster := 2
+	sectorsPerCluster := 8
 	reservedSectors := 32
 	numberFATs := 2
 	volId := rand.Uint32()
