@@ -2,39 +2,29 @@ package usecases
 
 import (
 	"fmt"
-	"io"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/models"
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
 
-func Create(imgPath string, diskSizeBytes int) error {
+func Create(imgPath string, diskSizeBytes int, fileExt string, numOfFiles int, eachFileSize int, withMBR bool) error {
 	f, err := tools.CreateSpecificatedSizeFileWhenNotExsisted(imgPath, uint64(diskSizeBytes))
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	img := models.NewFAT32Image(uint64(diskSizeBytes))
+	var op tools.FAT32Operator
+	var mbr *models.MBR
 
-	err = img.Export(io.NewOffsetWriter(f, 0))
-	if err != nil {
-		return err
+	if withMBR {
+		op = tools.NewMBRFAT32Manager(f)
+		mbr = models.NewFAT32MBR(uint64(diskSizeBytes))
+	} else {
+		op = tools.NewSimpleFAT32Manager(f)
 	}
 
-	fmt.Println(img)
-
-	return nil
-}
-
-func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, numOfFiles int, eachFileSize int) error {
-	f, err := tools.CreateSpecificatedSizeFileWhenNotExsisted(imgPath, uint64(diskSizeBytes))
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	img := models.NewFAT32Image(uint64(diskSizeBytes))
+	img := models.NewFAT32Image(uint64(op.GetFAT32SectionReader().Size()))
 
 	fmt.Println(img)
 
@@ -46,7 +36,15 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 		}
 	}
 
-	err = img.Export(io.NewOffsetWriter(f, 0))
+	if withMBR {
+		err = mbr.Export(op.(tools.MBROperator).GetMBROffsetWriter())
+		if err != nil {
+			return err
+		}
+		fmt.Println(mbr)
+	}
+
+	err = img.Export(op.GetFAT32OffsetWriter())
 	if err != nil {
 		return err
 	}

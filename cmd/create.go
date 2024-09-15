@@ -40,6 +40,7 @@ var createCmd = &cobra.Command{
 			fileExt := args[2]
 			numOfFilesText := args[3]
 			eachFileSizeText := args[4]
+			isMBR := (args[5] != "0")
 
 			fileSize, err := humanize.ParseBytes(fileSizeText)
 			if err != nil {
@@ -59,9 +60,9 @@ var createCmd = &cobra.Command{
 				return
 			}
 
-			fmt.Printf("imagePath %s, fileSize %d, fileExt %s, numOfFiles %d, eachFileSize %d \n", imagePath, fileSize, fileExt, numOfFiles, eachFileSize)
+			fmt.Printf("imagePath %s, fileSize %d, fileExt %s, numOfFiles %d, eachFileSize %d, isMBR %v \n", imagePath, fileSize, fileExt, numOfFiles, eachFileSize, isMBR)
 
-			err = mkmyfat.CreateWithEmptyFiles(imagePath, int(fileSize), fileExt, int(numOfFiles), int(eachFileSize))
+			err = mkmyfat.CreateWithEmptyFiles(imagePath, int(fileSize), fileExt, int(numOfFiles), int(eachFileSize), isMBR)
 			if err != nil {
 				fmt.Println(err)
 				return

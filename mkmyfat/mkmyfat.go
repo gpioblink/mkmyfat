@@ -10,15 +10,15 @@ import (
 )
 
 func Create(imgPath string, diskSizeBytes int) error {
-	err := usecases.Create(imgPath, diskSizeBytes)
+	err := usecases.Create(imgPath, diskSizeBytes, "dummy", 0, 0, false)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, numOfFiles int, eachFileSize int) error {
-	err := usecases.CreateWithEmptyFiles(imgPath, diskSizeBytes, fileExt, numOfFiles, eachFileSize)
+func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, numOfFiles int, eachFileSize int, isMBR bool) error {
+	err := usecases.Create(imgPath, diskSizeBytes, fileExt, numOfFiles, eachFileSize, isMBR)
 	if err != nil {
 		return err
 	}
