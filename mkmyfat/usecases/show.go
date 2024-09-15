@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/models"
@@ -14,7 +15,12 @@ func ShowImageInfo(imgPath string) error {
 	}
 	defer f.Close()
 
-	img, err := models.ImportFAT32Image(f)
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return fmt.Errorf("failed to get file info: %s", err)
+	}
+
+	img, err := models.ImportFAT32Image(io.NewSectionReader(f, 0, fileInfo.Size()))
 	if err != nil {
 		return fmt.Errorf("failed to import image: %s", err)
 	}

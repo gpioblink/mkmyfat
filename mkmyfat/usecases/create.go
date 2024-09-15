@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"fmt"
+	"io"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/models"
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
@@ -14,8 +15,9 @@ func Create(imgPath string, diskSizeBytes int) error {
 	}
 	defer f.Close()
 
-	img := models.NewFAT32Image(f, uint64(diskSizeBytes))
-	err = img.Export()
+	img := models.NewFAT32Image(uint64(diskSizeBytes))
+
+	err = img.Export(io.NewOffsetWriter(f, 0))
 	if err != nil {
 		return err
 	}
@@ -32,7 +34,7 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 	}
 	defer f.Close()
 
-	img := models.NewFAT32Image(f, uint64(diskSizeBytes))
+	img := models.NewFAT32Image(uint64(diskSizeBytes))
 
 	fmt.Println(img)
 
@@ -44,7 +46,7 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 		}
 	}
 
-	err = img.Export()
+	err = img.Export(io.NewOffsetWriter(f, 0))
 	if err != nil {
 		return err
 	}
