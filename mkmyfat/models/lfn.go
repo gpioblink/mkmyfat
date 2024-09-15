@@ -16,6 +16,9 @@ func (de *LongFileName) IsLongName() bool {
 }
 
 func NewLongFileName(order uint8, name [13]uint16, chksum uint8, clusterFrom uint32) *LongFileName {
+	if order == 1 {
+		order |= 0x40
+	}
 	return &LongFileName{
 		LDIR_Ord:       order,
 		LDIR_Name1:     [5]uint16{name[0], name[1], name[2], name[3], name[4]},

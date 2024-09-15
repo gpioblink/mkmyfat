@@ -64,7 +64,7 @@ func (ec *EntryCluster) AddFileEntry(fileName string, fileSize uint32, lastModif
 
 	for i, v := range splitedFileName {
 		// 13文字ごとにlfnの構築
-		lfn := NewLongFileName(uint8(i), v, tools.GetShortNameCheckSum(shortName), clusterFrom)
+		lfn := NewLongFileName(uint8(i+1), v, tools.GetShortNameCheckSum(shortName), clusterFrom)
 		tmpEntries = append(tmpEntries, lfn)
 	}
 

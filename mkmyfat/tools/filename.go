@@ -29,11 +29,14 @@ func SplitLongFileNamePerEntry(filename string) ([][13]uint16, error) {
 	words := utf16.Encode([]rune(filename))
 
 	// 13文字ずつに分割
+	// TODO: ちょうど13文字目に終端文字が来る場合に問題ないか確認
 	for i := 0; i < len(words); i += 13 {
 		var entry [13]uint16
 		for j := 0; j < 13; j++ {
 			if i+j < len(words) {
 				entry[j] = words[i+j]
+			} else if i+j == len(words) {
+				entry[j] = 0x0000
 			} else {
 				entry[j] = 0xFFFF
 			}
