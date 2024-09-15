@@ -25,6 +25,14 @@ func CreateWithEmptyFiles(imgPath string, diskSizeBytes int, fileExt string, num
 	return nil
 }
 
+func ShowImageInfo(imgPath string) error {
+	err := usecases.ShowImageInfo(imgPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 /* --- (deprecated) old funcs below --- */
 
 func PrintBPBFromFile(imgPath string) error {
