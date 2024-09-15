@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoding/binary"
-	"os"
+	"io"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
@@ -41,7 +41,7 @@ func NewFAT32Partition(lbaOffset uint32, lbaSize uint32) *Partition {
 	}
 }
 
-func (mbr *MBR) Export(f *os.File) error {
+func (mbr *MBR) Export(f *io.OffsetWriter) error {
 	_, err := f.Seek(0, 0)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (mbr *MBR) Export(f *os.File) error {
 	return nil
 }
 
-func ImportMBR(f *os.File) (*MBR, error) {
+func ImportMBR(f *io.SectionReader) (*MBR, error) {
 	mbr := &MBR{}
 	_, err := f.Seek(0, 0)
 	if err != nil {

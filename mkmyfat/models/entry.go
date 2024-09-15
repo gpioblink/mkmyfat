@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
@@ -93,7 +92,7 @@ func (ec *EntryCluster) AddFileEntry(fileName string, fileSize uint32, lastModif
 	return nil
 }
 
-func ImportRoot(bpb *Fat32BPB, fat *FAT, f *os.File) (*EntryCluster, error) {
+func ImportRoot(bpb *Fat32BPB, fat *FAT, f *io.SectionReader) (*EntryCluster, error) {
 	entries := []Entry{}
 	entSize := 32
 	tmpEnt := [32]byte{}
@@ -129,7 +128,7 @@ func ImportRoot(bpb *Fat32BPB, fat *FAT, f *os.File) (*EntryCluster, error) {
 	return &EntryCluster{entries, bpb, fat}, nil
 }
 
-func (ec *EntryCluster) ExportRoot(bpb *Fat32BPB, f *os.File) error {
+func (ec *EntryCluster) ExportRoot(bpb *Fat32BPB, f *io.OffsetWriter) error {
 	rootClusterAddr := ec.bpb.Sec2Addr(ec.bpb.Clus2Sec(bpb.BPB_RootClus))
 
 	_, err := f.Seek(int64(rootClusterAddr), 0)

@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
@@ -20,7 +19,7 @@ type FSInfo struct {
 	FSI_TrailSig   uint32   // 0xaa550000 // FSINFOの終了シグネチャ
 }
 
-func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
+func (fi *FSInfo) Export(bpb *Fat32BPB, f *io.OffsetWriter) error {
 	// FSINFOの配置箇所を特定する
 	_, err := f.Seek(int64(bpb.Sec2Addr(uint32(bpb.BPB_FSInfo))), 0)
 	if err != nil {
@@ -46,7 +45,7 @@ func (fi *FSInfo) Export(bpb *Fat32BPB, f *os.File) error {
 	return nil
 }
 
-func ImportFSInfo(bpb *Fat32BPB, f *os.File) (*FSInfo, error) {
+func ImportFSInfo(bpb *Fat32BPB, f *io.SectionReader) (*FSInfo, error) {
 	var fi FSInfo
 	var fiBk FSInfo
 
@@ -58,7 +57,7 @@ func ImportFSInfo(bpb *Fat32BPB, f *os.File) (*FSInfo, error) {
 	}
 
 	if fi.FSI_LeadSig != 0x41615252 || fi.FSI_StrucSig != 0x61417272 || fi.FSI_TrailSig != 0xaa550000 {
-		return nil, fmt.Errorf("file %s has bad FSINFO", f.Name())
+		return nil, fmt.Errorf("bad FSINFO")
 	}
 
 	// バックアップセクタを確認し、一致しなければエラーを返す
@@ -69,7 +68,7 @@ func ImportFSInfo(bpb *Fat32BPB, f *os.File) (*FSInfo, error) {
 	}
 
 	if !reflect.DeepEqual(fi, fiBk) {
-		return nil, fmt.Errorf("file %s has bad backup FSINFO", f.Name())
+		return nil, fmt.Errorf("bad backup FSINFO")
 	}
 
 	return &fi, nil

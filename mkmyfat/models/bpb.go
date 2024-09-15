@@ -6,7 +6,6 @@ import (
 	"io"
 	"math"
 	"math/rand/v2"
-	"os"
 	"reflect"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
@@ -45,7 +44,7 @@ type Fat32BPB struct {
 	BS_Sign       uint16    // 0xaa55 // ブートセクタの終了シグネチャ。0xaa55であることが推奨されている
 }
 
-func (bpb *Fat32BPB) Export(f *os.File) error {
+func (bpb *Fat32BPB) Export(f *io.OffsetWriter) error {
 	// FAT32のBPBをファイルに書き込む
 	_, err := f.Seek(0, 0)
 	if err != nil {
@@ -75,7 +74,7 @@ func (bpb *Fat32BPB) String() string {
 	return tools.PrettyPrintStruct("BPB", bpb)
 }
 
-func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {
+func ImportFAT32BPB(f *io.SectionReader) (*Fat32BPB, error) {
 	var bpb Fat32BPB
 	var bpbBk Fat32BPB
 	// FAT32のBPBを構造体に読み込む
@@ -87,7 +86,7 @@ func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {
 	// 読み込んだ構造体がFAT32ファイルシステムであることを確認する
 	// TODO: これだけだと絶対条件不足なので、ちゃんと考える
 	if bpb.BS_jmpBoot != [3]byte{0xeb, 0x58, 0x90} {
-		return nil, fmt.Errorf("file %s is not FAT32 file system", f.Name())
+		return nil, fmt.Errorf("bad FAT32 file system")
 	}
 
 	// バックアップセクタを確認し、一致しなければエラーを返す
@@ -98,7 +97,7 @@ func ImportFAT32BPB(f *os.File) (*Fat32BPB, error) {
 	}
 
 	if !reflect.DeepEqual(bpb, bpbBk) {
-		return nil, fmt.Errorf("file %s has bad backup FAT32 file system", f.Name())
+		return nil, fmt.Errorf("bad backup FAT32 file system")
 	}
 
 	return &bpb, nil

@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"os"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
 
 type FAT map[uint32]uint32
 
-func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
+func (fat *FAT) Export(bpb Fat32BPB, f *io.OffsetWriter) error {
 
 	// TODO: こんな1個ずつ読むのは遅いので、もっと効率的な方法を考える
 
@@ -42,7 +41,7 @@ func (fat *FAT) Export(bpb Fat32BPB, f *os.File) error {
 	return nil
 }
 
-func ImportFAT(bpb *Fat32BPB, f *os.File) (*FAT, error) {
+func ImportFAT(bpb *Fat32BPB, f *io.SectionReader) (*FAT, error) {
 	fat := make(FAT)
 	fatPerSec := bpb.BPB_BytsPerSec / 4
 	tmpSec := make([]uint32, fatPerSec)

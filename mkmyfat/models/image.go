@@ -2,12 +2,11 @@ package models
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"time"
 )
 
 type FAT32Image struct {
-	file     *os.File
 	fat32BPB *Fat32BPB
 	fsInfo   *FSInfo
 	fat      *FAT
@@ -33,23 +32,23 @@ func (f *FAT32Image) AddEmptyFileToRoot(fileName string, fileSizeByte uint32) er
 	return f.rootClus.AddFileEntry(fileName, fileSizeByte, time.Now())
 }
 
-func (img *FAT32Image) Export() error {
-	err := img.fat32BPB.Export(img.file)
+func (img *FAT32Image) Export(f *io.OffsetWriter) error {
+	err := img.fat32BPB.Export(f)
 	if err != nil {
 		return err
 	}
 
-	err = img.fsInfo.Export(img.fat32BPB, img.file)
+	err = img.fsInfo.Export(img.fat32BPB, f)
 	if err != nil {
 		return err
 	}
 
-	err = img.fat.Export(*img.fat32BPB, img.file)
+	err = img.fat.Export(*img.fat32BPB, f)
 	if err != nil {
 		return err
 	}
 
-	err = img.rootClus.ExportRoot(img.fat32BPB, img.file)
+	err = img.rootClus.ExportRoot(img.fat32BPB, f)
 	if err != nil {
 		return err
 	}
@@ -57,7 +56,7 @@ func (img *FAT32Image) Export() error {
 	return nil
 }
 
-func ImportFAT32Image(f *os.File) (*FAT32Image, error) {
+func ImportFAT32Image(f *io.SectionReader) (*FAT32Image, error) {
 	bpb, err := ImportFAT32BPB(f)
 	if err != nil {
 		return nil, err
@@ -79,7 +78,6 @@ func ImportFAT32Image(f *os.File) (*FAT32Image, error) {
 	}
 
 	return &FAT32Image{
-		file:     f,
 		fat32BPB: bpb,
 		fsInfo:   fsInfo,
 		fat:      fat,
@@ -91,14 +89,13 @@ func (img *FAT32Image) String() string {
 	return img.fat32BPB.String() + img.fsInfo.String() /*+ img.fat.String() + img.rootClus.String()*/
 }
 
-func NewFAT32Image(file *os.File, size uint64) *FAT32Image {
+func NewFAT32Image(size uint64) *FAT32Image {
 	bpb := NewFat32BPB(int(size))
 	fsInfo := NewFSInfo()
 	fat := NewFAT()
 	rootClus := NewEntryCluster(bpb, fat)
 
 	return &FAT32Image{
-		file:     file,
 		fat32BPB: bpb,
 		fsInfo:   fsInfo,
 		fat:      fat,
