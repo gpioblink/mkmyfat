@@ -102,3 +102,10 @@ cluster(slice):  []models.DirectoryEntry{}
 
 ```
 
+### イメージ情報の表示
+
+既存のFATファイルのイメージの各種ヘッダ情報とルートに存在するファイルの情報を表示します
+
+```
+go run main.go show <filename>
+```

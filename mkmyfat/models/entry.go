@@ -99,6 +99,7 @@ func ImportRoot(bpb *Fat32BPB, fat *FAT, f *os.File) (*EntryCluster, error) {
 	tmpEnt := [32]byte{}
 
 	// FIXME: とりあえず最初のクラスタしか見てないので、他のクラスタも見るようにする
+	// FIXME: 対応してないディレクトリ等の通常ファイル以外のエントリを読み込んだ際、エラーで終了させる
 
 	for i := uint32(0); i < uint32(bpb.BPB_BytsPerSec)*uint32(bpb.BPB_SecPerClus)/uint32(entSize); i++ {
 		sectionReader := io.NewSectionReader(f, int64(bpb.Sec2Addr(bpb.UserSec()))+int64(i*uint32(entSize)), int64(entSize))
