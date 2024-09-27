@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"reflect"
 
 	"gpioblink.com/app/makemyfat/mkmyfat/tools"
 )
@@ -66,10 +65,11 @@ func ImportFSInfo(bpb *Fat32BPB, f *io.SectionReader) (*FSInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if !reflect.DeepEqual(fi, fiBk) {
-		return nil, fmt.Errorf("bad backup FSINFO")
-	}
+	/*
+		if !reflect.DeepEqual(fi, fiBk) {
+			return nil, fmt.Errorf("bad backup FSINFO")
+		}
+	*/
 
 	return &fi, nil
 }
