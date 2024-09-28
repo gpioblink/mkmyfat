@@ -41,6 +41,14 @@ func ShowImageInfo(imgPath string) error {
 	return nil
 }
 
+func SaveVisualizeBinary(imgPath string, outPath string) error {
+	err := usecases.SaveVisualizeBinary(imgPath, outPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 /* --- (deprecated) old funcs below --- */
 
 func PrintBPBFromFile(imgPath string) error {
