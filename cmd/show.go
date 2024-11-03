@@ -4,8 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"gpioblink.com/app/makemyfat/mkmyfat"
 )
@@ -14,13 +12,14 @@ import (
 var showCmd = &cobra.Command{
 	Use:   "show <imagePath>",
 	Short: "Show BIOS Parameter Block",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		imagePath := args[0]
 		// fmt.Print(mkmyfat.PrintBPBFromFile(imagePath))
 		err := mkmyfat.ShowImageInfo(imagePath)
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
+		return nil
 	},
 }
 

@@ -16,23 +16,21 @@ import (
 var createCmd = &cobra.Command{
 	Use:   "create <imagePath> <fileSize> [<fileExt> <numOfFiles> <eachFileSize>]",
 	Short: "Create a new FAT32 image",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) <= 2 {
 			imagePath := args[0]
 			fileSizeText := args[1]
 
 			fileSize, err := humanize.ParseBytes(fileSizeText)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 
 			fmt.Printf("imagePath %s, fileSize %d \n", imagePath, fileSize)
 
 			err = mkmyfat.Create(imagePath, int(fileSize))
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 		} else {
 			imagePath := args[0]
@@ -44,30 +42,27 @@ var createCmd = &cobra.Command{
 
 			fileSize, err := humanize.ParseBytes(fileSizeText)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 
 			numOfFiles, err := strconv.Atoi(numOfFilesText)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 
 			eachFileSize, err := humanize.ParseBytes(eachFileSizeText)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 
 			fmt.Printf("imagePath %s, fileSize %d, fileExt %s, numOfFiles %d, eachFileSize %d, isMBR %v \n", imagePath, fileSize, fileExt, numOfFiles, eachFileSize, isMBR)
 
 			err = mkmyfat.CreateWithEmptyFiles(imagePath, int(fileSize), fileExt, int(numOfFiles), int(eachFileSize), isMBR)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 		}
+		return nil
 	},
 }
 

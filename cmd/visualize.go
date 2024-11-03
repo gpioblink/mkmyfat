@@ -4,8 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"gpioblink.com/app/makemyfat/mkmyfat"
 )
@@ -14,13 +12,14 @@ import (
 var visualizeCmd = &cobra.Command{
 	Use:   "visualize <imagePath>",
 	Short: "Visualiz any files as jpeg",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		volumePath := args[0]
 		outPath := args[1]
 		err := mkmyfat.SaveVisualizeBinary(volumePath, outPath)
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
+		return nil
 	},
 }
 

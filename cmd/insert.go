@@ -15,21 +15,21 @@ import (
 var insertCmd = &cobra.Command{
 	Use:   "insert <imagePath> <filePath> <entryNum>",
 	Short: "Insert a new file to the FAT32 image",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		imagePath := args[0]
 		filePath := args[1]
 		entryNum, err := strconv.Atoi(args[2])
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 
 		fmt.Printf("imagePath %s, filePath %s, entryNum %d\n", imagePath, filePath, entryNum)
 		err = mkmyfat.Insert(imagePath, filePath, entryNum)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
+
+		return nil
 	},
 }
 
