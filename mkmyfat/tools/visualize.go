@@ -37,16 +37,22 @@ func SaveImageAsJpeg(img image.Image, filepath string) error {
 }
 
 func MakeFATVisualizeImage(f *io.SectionReader) (image.Image, error) {
-	size := f.Size()
+	//size := f.Size()
 	width := 512
-	height := int(size / int64(width))
+	//height := int(size / int64(width))
+	height := 1500
 
 	sec := 512
 	tmpSec := make([]byte, sec)
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
-	for i := uint32(0); i < uint32(size/int64(sec)); i++ {
+	headLines := 200 // uint32(size/int64(sec))
+	userLines := 600
+	file2Lines := 600
+
+	// head lines
+	for i := uint32(0); i < uint32(headLines); i++ {
 		// FATを1セクタ単位で読み込み
 		addr := int64(sec) * int64(i)
 		sectionReader := io.NewSectionReader(f, addr, int64(sec))
@@ -59,10 +65,49 @@ func MakeFATVisualizeImage(f *io.SectionReader) (image.Image, error) {
 		for y := 0; y < sec/width; y++ {
 			for x := 0; x < width; x++ {
 				b := tmpSec[x+y]
-				img.Set(x, y+(int(addr)/width), color.RGBA{b, b, b, b})
+				img.Set(x, y+(int(addr)/width), color.RGBA{b, b, b, 255})
 			}
 		}
 	}
+
+	// user lines
+	for i := uint32(0); i < uint32(userLines-200); i++ {
+		// FATを1セクタ単位で読み込み
+		addr := 0x0000000000204000 + int64(sec)*int64(i)
+		sectionReader := io.NewSectionReader(f, addr, int64(sec))
+		err := binary.Read(sectionReader, binary.LittleEndian, &tmpSec)
+		if err != nil {
+			return nil, err
+		}
+		// i個ずつimgに格納
+		// fmt.Println(addr)
+		for y := 0; y < sec/width; y++ {
+			for x := 0; x < width; x++ {
+				b := tmpSec[x+y]
+				img.Set(x, y+(int(addr-0x0000000000204000)/width)+headLines, color.RGBA{b, b, b, 255})
+			}
+		}
+	}
+
+	// file2 lines
+	for i := uint32(0); i < uint32(file2Lines-200); i++ {
+		// FATを1セクタ単位で読み込み
+		addr := 0x8204800 + int64(sec)*int64(i)
+		sectionReader := io.NewSectionReader(f, addr, int64(sec))
+		err := binary.Read(sectionReader, binary.LittleEndian, &tmpSec)
+		if err != nil {
+			return nil, err
+		}
+		// i個ずつimgに格納
+		// fmt.Println(addr)
+		for y := 0; y < sec/width; y++ {
+			for x := 0; x < width; x++ {
+				b := tmpSec[x+y]
+				img.Set(x, y+(int(addr-0x8204800)/width)+headLines+userLines, color.RGBA{b, b, b, 255})
+			}
+		}
+	}
+
 	return img, nil
 
 }
